@@ -1,0 +1,15 @@
+[package]
+name = "ssrg"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+chrono = "0.4.19"
+chrono-humanize = "0.2.1"
+hotwatch = "0.4.6"
+pulldown-cmark = "0.9.1"
+tokio = { version = "1.18.2", features = ["full"] }
+walkdir = "2.3.2"
+warp = "0.3.2"

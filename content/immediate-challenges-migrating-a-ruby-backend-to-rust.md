@@ -1,4 +1,4 @@
-# Immediate challenges
+# Immediate challenges migrating a Ruby backend to Rust
 In migrating a midsize (12,000 LOC incl. tests) Ruby backend to Rust, a couple of immediate
 challenges present.
 

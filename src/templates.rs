@@ -8,50 +8,55 @@ pub const HEADER: &str = r#"<!DOCTYPE html>
   </head>
 "#;
 
-pub fn render_body(body: &str, modified: &str) -> String {
+pub fn body(body: &str, modified: &str) -> String {
     format!(
         r#"<body>
             <header class="container">
-                <nav>
-                    <ul>
-                        <li><strong><a href="/">t56k devlog</a></strong></li>
-                    </ul>
-                    <ul>
-                        <li><a href="https://github.com/t56k/">github</a></li>
-                        <li><a href="https://twitter.com/t56k_/">twitter</a></li>
-                    </ul>
-                </nav>
+                {}
             </header>
             <main class="container">
-                <h6>{}</h6>
+                <small>{}</small>
                 {}
             </main>
         </body>"#,
+        nav(),
         modified,
         body
     )
 }
 
-pub fn render_index(body: &str) -> String {
+pub fn index(body: &str) -> String {
     format!(
         r#"<body>
             <header class="container">
-                <nav>
-                    <ul>
-                        <li><strong><a href="/">t56k devlog</a></strong></li>
-                    </ul>
-                    <ul>
-                        <li><a href="https://github.com/t56k/">github</a></li>
-                        <li><a href="https://twitter.com/t56k_/">twitter</a></li>
-                    </ul>
-                </nav>
+                {}
             </header>
             <main class="container">
                 {}
             </main>
         </body>"#,
+        nav(),
         body
     )
 }
 
-pub const FOOTER: &str = r#"</html>"#;
+fn nav() -> String {
+    format!(r#"
+        <nav>
+            <ul>
+                <li><strong><a href="/">t56k devlog</a></strong></li>
+            </ul>
+            <ul>
+                <li><a href="https://github.com/t56k/" target="_blank">github</a></li>
+                <li><a href="https://twitter.com/t56k_/" target="_blank">twitter</a></li>
+            </ul>
+        </nav>
+        <mark>Development notes from whenever I think to update them</mark>
+    "#)
+}
+
+pub const FOOTER: &str = r#"
+    <footer class="container">
+      <small>© 2022 <a href="https://twitter.com/t56k_" target="_blank">t56k</a></small>
+    </footer>
+</html>"#;

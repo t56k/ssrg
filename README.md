@@ -10,3 +10,10 @@ cargo run
 ```
 
 To publish you'd need to copy out the HTML files to wherever you wanna serve them from. I should remove Pico from CDN in due time too.
+
+```
+cp public/* ../t56k.github.io && cd ../t56k.github.io
+git add .
+git commit -m 'changes'
+git push origin main
+```

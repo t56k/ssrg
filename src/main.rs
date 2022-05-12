@@ -14,7 +14,6 @@ type SSRGResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 #[tokio::main]
 async fn main() -> SSRGResult<()> {
-    println!("building files");
     rebuild_site(CONTENT, PUBLIC)?;
 
     tokio::task::spawn_blocking(move || {
@@ -22,7 +21,6 @@ async fn main() -> SSRGResult<()> {
 
         watch
             .watch(CONTENT, |_event: Event| {
-                println!("rebuilding files");
                 rebuild_site(CONTENT, PUBLIC).expect("rebuilding");
             })
             .expect("failed to watch content");

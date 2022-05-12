@@ -19,7 +19,7 @@ pub fn body(body: &str, modified: &str) -> String {
                 {}
             </main>
         </body>"#,
-        nav(),
+        NAV,
         modified,
         body
     )
@@ -35,26 +35,24 @@ pub fn index(body: &str) -> String {
                 {}
             </main>
         </body>"#,
-        nav(),
+        NAV,
         body
     )
 }
 
-fn nav() -> String {
-    format!(r#"
-        <nav>
-            <ul>
-                <li><strong><a href="/">t56k devlog</a></strong></li>
-            </ul>
-            <ul>
-                <li><a href="https://github.com/t56k/" target="_blank">gh</a></li>
-                <li><a href="https://stackoverflow.com/users/1153022/t56k" target="_blank">so</a></li>
-                <li><a href="https://twitter.com/t56k_/" target="_blank">tw</a></li>
-            </ul>
-        </nav>
-        <mark>Development notes from whenever I think to update them</mark>
-    "#)
-}
+pub const NAV: &str = r#"
+    <nav>
+        <ul>
+            <li><strong><a href="/">t56k devlog</a></strong></li>
+        </ul>
+        <ul>
+            <li><a href="https://github.com/t56k/" target="_blank">gh</a></li>
+            <li><a href="https://stackoverflow.com/users/1153022/t56k" target="_blank">so</a></li>
+            <li><a href="https://twitter.com/t56k_/" target="_blank">tw</a></li>
+        </ul>
+    </nav>
+    <mark>Development notes from whenever I think to update them</mark>
+"#;
 
 pub const FOOTER: &str = r#"
     <footer class="container">

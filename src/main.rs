@@ -1,4 +1,4 @@
-use std::{fs, net::IpAddr, path::Path, str::FromStr, thread, time::Duration};
+use std::{fs, net::IpAddr, path::Path, str::FromStr, thread, time::{Duration, SystemTime}};
 
 use chrono::{DateTime, Local};
 use hotwatch::{Event, Hotwatch};
@@ -40,12 +40,15 @@ async fn main() -> SSRGResult<()> {
 fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
     let _ = fs::remove_dir_all(output_dir);
 
-    let markdown_files: Vec<(String, fs::Metadata)> = walkdir::WalkDir::new(content_dir)
+    let mut markdown_files: Vec<(String, SystemTime)> = walkdir::WalkDir::new(content_dir)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().display().to_string().ends_with(".md"))
-        .map(|e| (e.path().display().to_string(), e.metadata().expect("failed to get metadata")))
+        .map(|e| (e.path().display().to_string(), e.metadata().expect("failed to get metadata").modified().unwrap()))
         .collect();
+
+    markdown_files.sort_by_key(|file| file.1);
+    markdown_files.reverse();
 
     let mut html_files = Vec::with_capacity(markdown_files.len());
 
@@ -53,7 +56,7 @@ fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
         let mut html = templates::HEADER.to_owned();
         let markdown = fs::read_to_string(&file.0)?;
         let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
-        let modified: DateTime<Local> = file.1.modified()?.into();
+        let modified: DateTime<Local> = file.1.into();
 
         let mut body = String::new();
         pulldown_cmark::html::push_html(&mut body, parser);
@@ -83,7 +86,7 @@ fn write_index(files: Vec<(String, String)>, output_dir: &str) -> SSRGResult<()>
         .into_iter()
         .map(|(file, modified)| {
             let file = file.trim_start_matches(output_dir);
-            let title = file.trim_start_matches("/").trim_end_matches(".html");
+            let title = file.trim_start_matches('/').trim_end_matches(".html");
 
             format!(r#"<small>{}</small> <a href="{}">{}</a>"#, modified, file, title)
         })

@@ -19,7 +19,7 @@ let modified: DateTime<Local> = modified_systemtime.into();
 modified.to_string()
 ```
 
-We have a couple of options. Astute readers will notice we're using [chrono](https://docs.rs/chrono/0.4.19/chrono/index.html#formatting-and-parsing) which handily comes with a couple of formatting options. The work's beed done for us:
+We have a couple of options. Astute readers will notice we're using [chrono](https://docs.rs/chrono/0.4.19/chrono/index.html#formatting-and-parsing) which handily comes with a couple of formatting options. The work's been done for us:
 
 ```
 modified.to_rfc2822()

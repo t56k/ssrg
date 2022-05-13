@@ -99,15 +99,15 @@ fn write_index(files: Vec<(String, String)>, output_dir: &str) -> SSRGResult<()>
         .into_iter()
         .map(|(file, modified)| {
             let file_name = file.trim_start_matches(output_dir);
-            let clean_file_name = file_name
-                .trim_start_matches('/')
-                .trim_end_matches(".html");
+            let clean_file_name = file_name.trim_start_matches('/').trim_end_matches(".html");
 
             let title = str::replace(clean_file_name, '-', " ");
 
             format!(
                 r#"<small>{}</small> <a href="{}">{}</a>"#,
-                modified, file_name, titlize(&title)
+                modified,
+                file_name,
+                titlize(&title)
             )
         })
         .collect::<Vec<String>>()

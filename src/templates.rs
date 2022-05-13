@@ -53,6 +53,6 @@ pub const NAV: &str = r#"
 
 pub const FOOTER: &str = r#"
     <footer class="container">
-      <small>© 2022 <a href="https://twitter.com/t56k_" target="_blank">t56k</a></small>
+      <small>Built with <a href="https://github.com/t56k/ssrg" target="_blank">ssrg</a> in 2022 by <a href="https://twitter.com/t56k_" target="_blank">t56k</a></small>
     </footer>
 </html>"#;

@@ -55,7 +55,7 @@ fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
                 e.metadata()
                     .expect("failed to get metadata")
                     .modified()
-                    .expect("failed to get modified")
+                    .expect("failed to get modified"),
             )
         })
         .collect();
@@ -98,12 +98,16 @@ fn write_index(files: Vec<(String, String)>, output_dir: &str) -> SSRGResult<()>
     let body = files
         .into_iter()
         .map(|(file, modified)| {
-            let file = file.trim_start_matches(output_dir);
-            let title = file.trim_start_matches('/').trim_end_matches(".html");
+            let file_name = file.trim_start_matches(output_dir);
+            let clean_file_name = file_name
+                .trim_start_matches('/')
+                .trim_end_matches(".html");
+
+            let title = str::replace(clean_file_name, '-', " ");
 
             format!(
                 r#"<small>{}</small> <a href="{}">{}</a>"#,
-                modified, file, title
+                modified, file_name, titlize(&title)
             )
         })
         .collect::<Vec<String>>()
@@ -116,4 +120,13 @@ fn write_index(files: Vec<(String, String)>, output_dir: &str) -> SSRGResult<()>
 
     fs::write(index_path, html)?;
     Ok(())
+}
+
+fn titlize(s: &str) -> String {
+    let mut c = s.chars();
+
+    match c.next() {
+        None => String::new(),
+        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+    }
 }

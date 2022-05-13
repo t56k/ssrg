@@ -74,7 +74,7 @@ fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
         let mut body = String::new();
         pulldown_cmark::html::push_html(&mut body, parser);
 
-        html.push_str(templates::body(&body, &modified.to_string()).as_str());
+        html.push_str(templates::body(&body, &modified.to_rfc2822()).as_str());
         html.push_str(templates::FOOTER);
 
         let html_file = file
@@ -86,7 +86,7 @@ fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
         let _ = fs::create_dir_all(folder);
         fs::write(&html_file, html)?;
 
-        html_files.push((html_file, modified.to_string()));
+        html_files.push((html_file, modified.to_rfc2822()));
     }
 
     write_index(html_files, output_dir)?;
@@ -100,11 +100,10 @@ fn write_index(files: Vec<(String, String)>, output_dir: &str) -> SSRGResult<()>
         .map(|(file, modified)| {
             let file_name = file.trim_start_matches(output_dir);
             let clean_file_name = file_name.trim_start_matches('/').trim_end_matches(".html");
-
             let title = str::replace(clean_file_name, '-', " ");
 
             format!(
-                r#"<small>{}</small> <a href="{}">{}</a>"#,
+                r#"<small>{}</small><br /><a href="{}">{}</a><hr />"#,
                 modified,
                 file_name,
                 titlize(&title)

@@ -19,9 +19,7 @@ pub fn body(body: &str, modified: &str) -> String {
                 {}
             </main>
         </body>"#,
-        NAV,
-        modified,
-        body
+        NAV, modified, body
     )
 }
 
@@ -35,8 +33,7 @@ pub fn index(body: &str) -> String {
                 {}
             </main>
         </body>"#,
-        NAV,
-        body
+        NAV, body
     )
 }
 
@@ -51,7 +48,7 @@ pub const NAV: &str = r#"
             <li><a href="https://twitter.com/t56k_/" target="_blank">tw</a></li>
         </ul>
     </nav>
-    <mark>Development notes from whenever I think to update them</mark>
+    <mark>Development notes from whenever</mark>
 "#;
 
 pub const FOOTER: &str = r#"

@@ -1,4 +1,10 @@
-use std::{fs, net::IpAddr, path::Path, str::FromStr, thread, time::{Duration, SystemTime}};
+use std::{
+    fs,
+    net::{IpAddr, Ipv4Addr},
+    path::Path,
+    thread,
+    time::{Duration, SystemTime},
+};
 
 use chrono::{DateTime, Local};
 use hotwatch::{Event, Hotwatch};
@@ -8,7 +14,6 @@ mod templates;
 
 const CONTENT: &str = "content";
 const PUBLIC: &str = "public";
-const IP: &str = "127.0.0.1";
 
 type SSRGResult<T> = Result<T, Box<dyn std::error::Error>>;
 
@@ -30,7 +35,7 @@ async fn main() -> SSRGResult<()> {
         }
     });
 
-    let addr = IpAddr::from_str(&*IP)?;
+    let addr = IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1));
     let index = warp::get().and(warp::fs::dir(PUBLIC));
 
     warp::serve(index).run((addr, 4000)).await;
@@ -44,7 +49,15 @@ fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().display().to_string().ends_with(".md"))
-        .map(|e| (e.path().display().to_string(), e.metadata().expect("failed to get metadata").modified().unwrap()))
+        .map(|e| {
+            (
+                e.path().display().to_string(),
+                e.metadata()
+                    .expect("failed to get metadata")
+                    .modified()
+                    .expect("failed to get modified")
+            )
+        })
         .collect();
 
     markdown_files.sort_by_key(|file| file.1);
@@ -88,7 +101,10 @@ fn write_index(files: Vec<(String, String)>, output_dir: &str) -> SSRGResult<()>
             let file = file.trim_start_matches(output_dir);
             let title = file.trim_start_matches('/').trim_end_matches(".html");
 
-            format!(r#"<small>{}</small> <a href="{}">{}</a>"#, modified, file, title)
+            format!(
+                r#"<small>{}</small> <a href="{}">{}</a>"#,
+                modified, file, title
+            )
         })
         .collect::<Vec<String>>()
         .join("<br />\n");

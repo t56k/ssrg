@@ -25,7 +25,8 @@ async fn main() -> SSRGResult<()> {
         let mut watch = Hotwatch::new().expect("hotwatch failed");
 
         watch
-            .watch(CONTENT, |_event: Event| {
+            .watch(CONTENT, |event: Event| {
+                println!("changed {:?}", event);
                 rebuild_site(CONTENT, PUBLIC).expect("rebuilding");
             })
             .expect("failed to watch content");

@@ -9,11 +9,6 @@ mkdir public
 cargo run
 ```
 
-To publish you'd need to copy out the HTML files to wherever you wanna serve them from. I should remove Pico from CDN in due time too.
+## Publishing
 
-```
-cp public/* ../t56k.github.io && cd ../t56k.github.io
-git add .
-git commit -m 'changes'
-git push origin main
-```
+To publish just run `./push.sh "commit message"`. Change your folder names to suit.

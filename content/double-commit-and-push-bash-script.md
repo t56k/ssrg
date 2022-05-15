@@ -18,4 +18,4 @@ git push origin main
 cd ../ssrg
 ```
 
-This is fine for a first-pass but it doesn't build the HTML first, meaning I still need to `cargo run` before running it. The best option here is to add some kind of build flag to write the HTML files.
+This is fine for a first-pass but it doesn't build the HTML first, meaning I still need to `cargo run` before running it. The best option here is to add some kind of build flag to write the HTML files, likewise to break-out individual file rewrites instead of rewriting the whole collection each time.

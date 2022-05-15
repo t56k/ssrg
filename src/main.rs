@@ -10,24 +10,33 @@ use chrono::{DateTime, Local};
 use hotwatch::{Event, Hotwatch};
 use warp::Filter;
 
+mod helpers;
 mod templates;
 
 const CONTENT: &str = "content";
 const PUBLIC: &str = "public";
 
+type File = (String, SystemTime);
 type SSRGResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 #[tokio::main]
 async fn main() -> SSRGResult<()> {
-    rebuild_site(CONTENT, PUBLIC)?;
+    build_site()?;
 
     tokio::task::spawn_blocking(move || {
         let mut watch = Hotwatch::new().expect("hotwatch failed");
 
         watch
             .watch(CONTENT, |event: Event| {
-                println!("changed {:?}", event);
-                rebuild_site(CONTENT, PUBLIC).expect("rebuilding");
+                if let Event::Write(path) = event {
+                    println!("rebuilding {:?}", path);
+
+                    let now = SystemTime::now();
+                    write_file((path.into_os_string().into_string().unwrap(), now))
+                        .expect("couldn't write file");
+
+                    write_index().expect("couldn't rewrite index");
+                }
             })
             .expect("failed to watch content");
 
@@ -43,10 +52,70 @@ async fn main() -> SSRGResult<()> {
     Ok(())
 }
 
-fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
-    let _ = fs::remove_dir_all(output_dir);
+fn build_site() -> SSRGResult<()> {
+    let _ = fs::remove_dir_all(PUBLIC);
+    let files = markdown_files()?;
+    for file in files {
+        write_file(file)?;
+    }
 
-    let mut markdown_files: Vec<(String, SystemTime)> = walkdir::WalkDir::new(content_dir)
+    write_index()?;
+    Ok(())
+}
+
+fn write_file(file: File) -> SSRGResult<()> {
+    let mut html = templates::HEADER.to_owned();
+    let markdown = fs::read_to_string(&file.0)?;
+    let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
+    let modified: DateTime<Local> = file.1.into();
+
+    let mut body = String::new();
+    pulldown_cmark::html::push_html(&mut body, parser);
+
+    html.push_str(templates::body(&body, &modified.to_rfc2822()).as_str());
+    html.push_str(templates::FOOTER);
+
+    let html_file = file.0.replace(CONTENT, PUBLIC).replace(".md", ".html");
+    let folder = Path::new(&html_file).parent().unwrap();
+    let _ = fs::create_dir_all(folder);
+    fs::write(&html_file, html)?;
+
+    Ok(())
+}
+
+fn write_index() -> SSRGResult<()> {
+    let files = markdown_files()?;
+
+    let mut html = templates::HEADER.to_owned();
+    let body = files
+        .into_iter()
+        .map(|(file, modified)| {
+            let file_name = file.trim_start_matches(CONTENT).replace(".md", ".html");
+            let clean_file_name = file_name.trim_start_matches('/').trim_end_matches(".html");
+            let title = str::replace(clean_file_name, '-', " ");
+            let relative_mod: DateTime<Local> = modified.into();
+
+            format!(
+                r#"<small>{}</small><br /><a href="{}">{}</a><hr />"#,
+                relative_mod.to_rfc2822(),
+                file_name,
+                helpers::titlize(&title)
+            )
+        })
+        .collect::<Vec<String>>()
+        .join("<br />\n");
+
+    html.push_str(templates::index(&body).as_str());
+    html.push_str(templates::FOOTER);
+
+    let index_path = Path::new(&PUBLIC).join("index.html");
+    fs::write(index_path, html)?;
+
+    Ok(())
+}
+
+fn markdown_files() -> SSRGResult<Vec<File>> {
+    let mut files: Vec<File> = walkdir::WalkDir::new(&CONTENT)
         .into_iter()
         .filter_map(|e| e.ok())
         .filter(|e| e.path().display().to_string().ends_with(".md"))
@@ -61,72 +130,8 @@ fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
         })
         .collect();
 
-    markdown_files.sort_by_key(|file| file.1);
-    markdown_files.reverse();
+    files.sort_by_key(|file| file.1);
+    files.reverse();
 
-    let mut html_files = Vec::with_capacity(markdown_files.len());
-
-    for file in &markdown_files {
-        let mut html = templates::HEADER.to_owned();
-        let markdown = fs::read_to_string(&file.0)?;
-        let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
-        let modified: DateTime<Local> = file.1.into();
-
-        let mut body = String::new();
-        pulldown_cmark::html::push_html(&mut body, parser);
-
-        html.push_str(templates::body(&body, &modified.to_rfc2822()).as_str());
-        html.push_str(templates::FOOTER);
-
-        let html_file = file
-            .0
-            .replace(content_dir, output_dir)
-            .replace(".md", ".html");
-
-        let folder = Path::new(&html_file).parent().unwrap();
-        let _ = fs::create_dir_all(folder);
-        fs::write(&html_file, html)?;
-
-        html_files.push((html_file, modified.to_rfc2822()));
-    }
-
-    write_index(html_files, output_dir)?;
-    Ok(())
-}
-
-fn write_index(files: Vec<(String, String)>, output_dir: &str) -> SSRGResult<()> {
-    let mut html = templates::HEADER.to_owned();
-    let body = files
-        .into_iter()
-        .map(|(file, modified)| {
-            let file_name = file.trim_start_matches(output_dir);
-            let clean_file_name = file_name.trim_start_matches('/').trim_end_matches(".html");
-            let title = str::replace(clean_file_name, '-', " ");
-
-            format!(
-                r#"<small>{}</small><br /><a href="{}">{}</a><hr />"#,
-                modified,
-                file_name,
-                titlize(&title)
-            )
-        })
-        .collect::<Vec<String>>()
-        .join("<br />\n");
-
-    html.push_str(templates::index(&body).as_str());
-    html.push_str(templates::FOOTER);
-
-    let index_path = Path::new(&output_dir).join("index.html");
-
-    fs::write(index_path, html)?;
-    Ok(())
-}
-
-fn titlize(s: &str) -> String {
-    let mut c = s.chars();
-
-    match c.next() {
-        None => String::new(),
-        Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
-    }
+    Ok(files)
 }

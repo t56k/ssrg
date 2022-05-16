@@ -1,4 +1,4 @@
-# Individual file writing
+# Individual file writing and cleanup
 
 A glaring issue in the [previous](https://github.com/t56k/ssrg/commit/b31bc2837e1f4c0ee61ceb7433730af1242d2799) ssrg commit was the fact that the entire site was recompiled on each change. This is even mentioned in Kerkour's original [blog post](https://kerkour.com/rust-static-site-generator) where it is suggested that it should be looked at in future versions. So, let's get to it.
 
@@ -46,7 +46,7 @@ That's one problem solved.
 Now we need to change the build fns to be able to rebuild one HTML file based on the Markdown's path and not based on the whole `CONTENT` dir. In practical terms, that means splitting the `rebuilt_site()` fn in half--right between the file collection and the block that does the HTML file building. Meaning this rather large fn:
 
 ```
-fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
+fn rebuild_site(content_dir: &str, output_dir: &str) -> ErrRes<()> {
     let _ = fs::remove_dir_all(output_dir);
 
     let mut markdown_files: Vec<(String, SystemTime)> = walkdir::WalkDir::new(content_dir)
@@ -101,7 +101,7 @@ fn rebuild_site(content_dir: &str, output_dir: &str) -> SSRGResult<()> {
 Can be better expressed as three (well four really) more succinct ones:
 
 ```
-fn build_site() -> SSRGResult<()> {
+fn build_site() -> ErrRes<()> {
     let _ = fs::remove_dir_all(PUBLIC);
     let files = markdown_files()?;
     for file in files {
@@ -112,7 +112,7 @@ fn build_site() -> SSRGResult<()> {
     Ok(())
 }
 
-fn write_file(file: File) -> SSRGResult<()> {
+fn write_file(file: File) -> ErrRes<()> {
     let mut html = templates::HEADER.to_owned();
     let markdown = fs::read_to_string(&file.0)?;
     let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
@@ -132,7 +132,7 @@ fn write_file(file: File) -> SSRGResult<()> {
     Ok(())
 }
 
-fn markdown_files() -> SSRGResult<Vec<File>> {
+fn markdown_files() -> ErrRes<Vec<File>> {
     let mut files: Vec<File> = walkdir::WalkDir::new(&CONTENT)
         .into_iter()
         .filter_map(|e| e.ok())
@@ -162,7 +162,7 @@ Building the index required some additional changes. In the original function, i
 Lazily, the simplest way forward is to just use the `markdown_files()` fn and replace the file extensions.
 
 ```
-fn write_index() -> SSRGResult<()> {
+fn write_index() -> ErrRes<()> {
     let files = markdown_files()?;
 
     let mut html = templates::HEADER.to_owned();

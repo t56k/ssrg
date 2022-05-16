@@ -29,12 +29,11 @@ async fn main() -> ErrRes<()> {
         watch
             .watch(CONTENT, |event: Event| {
                 if let Event::Write(path) = event {
-                    println!("rebuilding {:?}", path);
-
-                    let now = SystemTime::now();
-                    write_file((path.into_os_string().into_string().unwrap(), now))
-                        .expect("couldn't write file");
-
+                    write_file((
+                        path.clone().into_os_string().into_string().unwrap(),
+                        path.metadata().unwrap().modified().unwrap(),
+                    ))
+                    .expect("couldn't write file");
                     write_index().expect("couldn't rewrite index");
                 }
             })

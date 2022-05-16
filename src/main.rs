@@ -17,10 +17,10 @@ const CONTENT: &str = "content";
 const PUBLIC: &str = "public";
 
 type File = (String, SystemTime);
-type SSRGResult<T> = Result<T, Box<dyn std::error::Error>>;
+type ErrRes<T> = Result<T, Box<dyn std::error::Error>>;
 
 #[tokio::main]
-async fn main() -> SSRGResult<()> {
+async fn main() -> ErrRes<()> {
     build_site()?;
 
     tokio::task::spawn_blocking(move || {
@@ -52,7 +52,7 @@ async fn main() -> SSRGResult<()> {
     Ok(())
 }
 
-fn build_site() -> SSRGResult<()> {
+fn build_site() -> ErrRes<()> {
     let files = markdown_files()?;
     for file in files {
         write_file(file)?;
@@ -62,7 +62,7 @@ fn build_site() -> SSRGResult<()> {
     Ok(())
 }
 
-fn write_file(file: File) -> SSRGResult<()> {
+fn write_file(file: File) -> ErrRes<()> {
     let mut html = templates::HEADER.to_owned();
     let markdown = fs::read_to_string(&file.0)?;
     let parser = pulldown_cmark::Parser::new_ext(&markdown, pulldown_cmark::Options::all());
@@ -82,7 +82,7 @@ fn write_file(file: File) -> SSRGResult<()> {
     Ok(())
 }
 
-fn write_index() -> SSRGResult<()> {
+fn write_index() -> ErrRes<()> {
     let files = markdown_files()?;
 
     let mut html = templates::HEADER.to_owned();
@@ -113,7 +113,7 @@ fn write_index() -> SSRGResult<()> {
     Ok(())
 }
 
-fn markdown_files() -> SSRGResult<Vec<File>> {
+fn markdown_files() -> ErrRes<Vec<File>> {
     let mut files: Vec<File> = walkdir::WalkDir::new(&CONTENT)
         .into_iter()
         .filter_map(|e| e.ok())

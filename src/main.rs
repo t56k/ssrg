@@ -53,7 +53,6 @@ async fn main() -> SSRGResult<()> {
 }
 
 fn build_site() -> SSRGResult<()> {
-    let _ = fs::remove_dir_all(PUBLIC);
     let files = markdown_files()?;
     for file in files {
         write_file(file)?;

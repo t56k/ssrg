@@ -51,9 +51,9 @@ pub const NAV: &str = r#"
             <li><strong><a href="/">t56k devlog</a></strong></li>
         </ul>
         <ul>
-            <li><a href="https://github.com/t56k/" target="_blank">gh</a></li>
+            <li><a href="https://github.com/t56k" target="_blank">gh</a></li>
             <li><a href="https://stackoverflow.com/users/1153022/t56k" target="_blank">so</a></li>
-            <li><a href="https://twitter.com/t56k_/" target="_blank">tw</a></li>
+            <li><a href="https://twitter.com/t56k_" target="_blank">tw</a></li>
         </ul>
     </nav>
     <mark>Development notes from whenever</mark>

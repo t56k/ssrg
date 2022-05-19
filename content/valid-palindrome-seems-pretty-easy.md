@@ -14,7 +14,7 @@ Output: true
 Explanation: "amanaplanacanalpanama" is a palindrome.
 ```
 
-So, we can just compare a cleaned `Vec` of `char`s with its reverse. We don't have to worry about dividing by two or anything like that since we can just compare it to its reverse. Here we go.
+So, we can just compare a cleaned `Vec` of `char`s with its reverse. We don't have to worry about dividing by two or anything like that. Should save us some memory and time. Here we go.
 
 ```
 impl Solution {
